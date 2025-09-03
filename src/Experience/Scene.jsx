@@ -4,11 +4,8 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 
-import First from "./models/First";
-import Second from "./models/Second";
-import Third from "./models/Third";
+import Codrops from "./models/Codrops";
 import Fourth from "./models/Fourth";
-import Fifth from "./models/Fifth";
 
 import { cameraCurve, DebugCurve, CameraHelper } from "./utils/curve";
 
@@ -119,11 +116,8 @@ const Scene = ({
       <ambientLight />
 
       <Suspense fallback={null}>
-        <First />
-        <Second />
-        <Third />
+        <Codrops />
         <Fourth />
-        <Fifth />
       </Suspense>
     </>
   );

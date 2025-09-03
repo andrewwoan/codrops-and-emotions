@@ -104,7 +104,7 @@ const Experience = () => {
 
   return (
     <>
-      <Canvas eventSource={document.getElementById("root")}>
+      <Canvas flat={true} eventSource={document.getElementById("root")}>
         {/* <group ref={cameraGroup}> */}
         <PerspectiveCamera
           ref={camera}
@@ -113,7 +113,7 @@ const Experience = () => {
           position={[0, 10, 0]}
         />
         {/* </group> */}
-        <OrbitControls />
+        <OrbitControls enableZoom={false} />
         <Scene
           // cameraGroup={cameraGroup}
           camera={camera}
