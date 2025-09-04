@@ -18,10 +18,10 @@ export const cameraCurve = new THREE.CatmullRomCurve3(
     new THREE.Vector3(4.399514, 1.654118, -17.444349), // Original 4th point
     new THREE.Vector3(3.968427, 1.370732, -22.734327), // Original 5th point
     new THREE.Vector3(4.20915, 1.370732, -22.902386), // Original 6th point
-    new THREE.Vector3(4.044714, 0.829584, -24.020878), // Original 7th point
-    new THREE.Vector3(3.454959, 0.829584, -26.829981), // Original 8th point
-    new THREE.Vector3(1.747707, 0.829584, -33.011375), // Original 9th point
-    new THREE.Vector3(0.276049, 0.829584, -41.454048), // Original 10th point
+    new THREE.Vector3(4.044714, 0.89, -24.020878), // Original 7th point
+    new THREE.Vector3(3.454959, 0.89, -26.829981), // Original 8th point
+    new THREE.Vector3(1.747707, 0.89, -33.011375), // Original 9th point
+    new THREE.Vector3(0.276049, 0.89, -41.454048), // Original 10th point
   ],
   true
 );

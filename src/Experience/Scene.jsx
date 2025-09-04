@@ -164,7 +164,7 @@ const Scene = ({
         ]}
       />
       {/* <fogExp2 attach="fog" color="#403e3e" density={0.01} /> */}
-      <DebugCurve curve={cameraCurve} />
+      {/* <DebugCurve curve={cameraCurve} /> */}
 
       <ambientLight />
 
