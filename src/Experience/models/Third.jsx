@@ -27,7 +27,22 @@ export default function Model({ progress, ...props }) {
     ship: {
       start: 0.9,
       end: 0.935,
-      maxPositionY: -2, // Move down slightly
+      maxPositionY: -2.5, // Move down slightly
+    },
+    leftArm: {
+      start: 0.9,
+      end: 0.935,
+      maxPositionY: -3.5, // Move down slightly
+    },
+    rightArm: {
+      start: 0.9,
+      end: 0.935,
+      maxPositionY: -3.5, // Move down slightly
+    },
+    plane017: {
+      start: 0.9,
+      end: 0.935,
+      maxPositionY: -3.5, // Move down slightly
     },
   };
 
@@ -48,8 +63,18 @@ export default function Model({ progress, ...props }) {
     () => calculateAnimationAmount(animationConfig.ship),
     [progress]
   );
-
-  console.log("Ship progress:", shipProgress, "at overall progress:", progress);
+  const leftArmProgress = useMemo(
+    () => calculateAnimationAmount(animationConfig.leftArm),
+    [progress]
+  );
+  const rightArmProgress = useMemo(
+    () => calculateAnimationAmount(animationConfig.rightArm),
+    [progress]
+  );
+  const plane017Progress = useMemo(
+    () => calculateAnimationAmount(animationConfig.plane017),
+    [progress]
+  );
 
   // Calculate final transformations
   const hiddenDoorRotation = useMemo(() => {
@@ -70,6 +95,35 @@ export default function Model({ progress, ...props }) {
       basePosition[2],
     ];
   }, [shipProgress]);
+
+  const leftArmPosition = useMemo(() => {
+    const basePosition = [4.968, 1.501, -43.489];
+    return [
+      basePosition[0] + animationConfig.leftArm.maxPositionY * leftArmProgress,
+      basePosition[1],
+      basePosition[2],
+    ];
+  }, [leftArmProgress]);
+
+  const rightArmPosition = useMemo(() => {
+    const basePosition = [6.6, 1.406, -43.773];
+    return [
+      basePosition[0] +
+        animationConfig.rightArm.maxPositionY * rightArmProgress,
+      basePosition[1],
+      basePosition[2],
+    ];
+  }, [rightArmProgress]);
+
+  const plane017Position = useMemo(() => {
+    const basePosition = [5.891, -2.478, -43.788];
+    return [
+      basePosition[0] +
+        animationConfig.plane017.maxPositionY * plane017Progress,
+      basePosition[1],
+      basePosition[2],
+    ];
+  }, [plane017Progress]);
 
   return (
     <group {...props} dispose={null}>
@@ -141,7 +195,7 @@ export default function Model({ progress, ...props }) {
           />
         </Float>
         <group
-          position={[5.891, -2.478, -43.788]}
+          position={plane017Position}
           rotation={[-1.566, -0.042, -3.004]}
           scale={0.19}
         >
@@ -157,14 +211,14 @@ export default function Model({ progress, ...props }) {
         <mesh
           geometry={nodes.Right_Arm.geometry}
           material={newmaterials.second_Baked}
-          position={[6.6, 1.406, -43.773]}
+          position={rightArmPosition}
           rotation={[-1.566, -0.042, -3.004]}
           scale={0.19}
         />
         <mesh
           geometry={nodes.Left_Arm.geometry}
           material={newmaterials.second_Baked}
-          position={[4.968, 1.501, -43.489]}
+          position={leftArmPosition}
           rotation={[-1.566, -0.042, -3.004]}
           scale={0.19}
         />
