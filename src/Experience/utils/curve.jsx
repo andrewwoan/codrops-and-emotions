@@ -133,7 +133,7 @@ export const rotationTargets = [
     ),
   },
   {
-    progress: 0.835,
+    progress: 0.815,
     rotation: new THREE.Euler(
       0.007820434024873394,
       0.21127857159964955,

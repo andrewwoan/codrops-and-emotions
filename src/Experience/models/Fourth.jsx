@@ -20,7 +20,7 @@ export default function Model({ progress, ...props }) {
         progress={progress}
         showRanges={[
           [0, 0.455], // First range: 0 to 0.455
-          [0.95, 1], // Second range: 0.95 to 1
+          [0.84, 1], // Second range: 0.95 to 1
         ]}
       >
         <mesh
