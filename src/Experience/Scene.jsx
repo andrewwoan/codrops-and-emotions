@@ -4,10 +4,17 @@ import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Environment } from "@react-three/drei";
 
-import Codrops from "./models/Codrops";
+import First from "./models/First";
+import Second from "./models/Second";
+import Third from "./models/Third";
 import Fourth from "./models/Fourth";
 
-import { cameraCurve, DebugCurve, CameraHelper } from "./utils/curve";
+import {
+  cameraCurve,
+  DebugCurve,
+  rotationTargets,
+  CameraHelper,
+} from "./utils/curve";
 
 const Scene = ({
   cameraGroup,
@@ -16,13 +23,45 @@ const Scene = ({
   setscrollProgress,
   targetScrollProgress,
   lerpFactor,
-  mouseOffset,
+  mousePositionOffset,
+  mouseRotationOffset,
 }) => {
   const [pulseIntensity, setPulseIntensity] = useState(0);
+  const [rotationBufferQuat] = useState(
+    new THREE.Quaternion().setFromEuler(rotationTargets[0].rotation)
+  );
+
+  const getLerpedRotation = (progress) => {
+    for (let i = 0; i < rotationTargets.length - 1; i++) {
+      const start = rotationTargets[i];
+      const end = rotationTargets[i + 1];
+      if (progress >= start.progress && progress <= end.progress) {
+        const lerpFactor =
+          (progress - start.progress) / (end.progress - start.progress);
+
+        const startQuaternion = new THREE.Quaternion().setFromEuler(
+          start.rotation
+        );
+        const endQuaternion = new THREE.Quaternion().setFromEuler(end.rotation);
+
+        const lerpingQuaternion = new THREE.Quaternion();
+        lerpingQuaternion.slerpQuaternions(
+          startQuaternion,
+          endQuaternion,
+          lerpFactor
+        );
+
+        return lerpingQuaternion;
+      }
+    }
+
+    return new THREE.Quaternion().setFromEuler(
+      rotationTargets[rotationTargets.length - 1].rotation
+    );
+  };
 
   useFrame((state) => {
     if (camera) {
-      console.log(camera.current.position);
       const newPulseIntensity = (Math.sin(state.clock.elapsedTime * 3) + 1) / 2;
       setPulseIntensity(newPulseIntensity);
 
@@ -42,57 +81,71 @@ const Scene = ({
 
       setscrollProgress(newProgress);
 
+      console.log(newProgress);
+      // console.log(camera.current.rotation);
+
       const basePoint = cameraCurve.getPoint(newProgress);
-
-      camera.current.position.x = THREE.MathUtils.lerp(
-        camera.current.position.x,
-        basePoint.x,
-        0.1
-      );
-      camera.current.position.y = THREE.MathUtils.lerp(
-        camera.current.position.y,
-        basePoint.y,
-        0.1
-      );
-      camera.current.position.z = THREE.MathUtils.lerp(
-        camera.current.position.z,
-        basePoint.z,
-        0.1
-      );
-
-      // cameraGroup.current.position.x = THREE.MathUtils.lerp(
-      //   cameraGroup.current.position.x,
-      //   basePoint.x,
-      //   0.1
-      // );
-      // cameraGroup.current.position.y = THREE.MathUtils.lerp(
-      //   cameraGroup.current.position.y,
-      //   basePoint.y,
-      //   0.1
-      // );
-      // cameraGroup.current.position.z = THREE.MathUtils.lerp(
-      //   cameraGroup.current.position.z,
-      //   basePoint.z,
-      //   0.1
-      // );
 
       // camera.current.position.x = THREE.MathUtils.lerp(
       //   camera.current.position.x,
-      //   mouseOffset.current.x,
+      //   basePoint.x,
       //   0.1
       // );
       // camera.current.position.y = THREE.MathUtils.lerp(
       //   camera.current.position.y,
-      //   -mouseOffset.current.y,
+      //   basePoint.y,
       //   0.1
       // );
-      // camera.current.position.z = 0;
+      // camera.current.position.z = THREE.MathUtils.lerp(
+      //   camera.current.position.z,
+      //   basePoint.z,
+      //   0.1
+      // );
 
-      // const targetRotation = getLerpedRotation(newProgress);
-      // cameraGroup.current.rotation.copy(targetRotation);
+      cameraGroup.current.position.x = THREE.MathUtils.lerp(
+        cameraGroup.current.position.x,
+        basePoint.x,
+        0.1
+      );
+      cameraGroup.current.position.y = THREE.MathUtils.lerp(
+        cameraGroup.current.position.y,
+        basePoint.y,
+        0.1
+      );
+      cameraGroup.current.position.z = THREE.MathUtils.lerp(
+        cameraGroup.current.position.z,
+        basePoint.z,
+        0.1
+      );
 
-      // const lookAtPoint = cameraCurve.getPoint(newProgress + 0.01);
-      // camera.current.lookAt(lookAtPoint);
+      camera.current.position.x = THREE.MathUtils.lerp(
+        camera.current.position.x,
+        mousePositionOffset.current.x,
+        0.1
+      );
+      camera.current.position.y = THREE.MathUtils.lerp(
+        camera.current.position.y,
+        -mousePositionOffset.current.y,
+        0.1
+      );
+      camera.current.position.z = 0;
+
+      const targetRotation = getLerpedRotation(newProgress);
+
+      rotationBufferQuat.slerp(targetRotation, 0.05);
+
+      cameraGroup.current.quaternion.copy(rotationBufferQuat);
+
+      camera.current.rotation.x = THREE.MathUtils.lerp(
+        camera.current.rotation.x,
+        -mouseRotationOffset.current.x,
+        0.1
+      );
+      camera.current.rotation.y = THREE.MathUtils.lerp(
+        camera.current.rotation.y,
+        -mouseRotationOffset.current.y,
+        0.1
+      );
     }
   });
 
@@ -116,8 +169,10 @@ const Scene = ({
       <ambientLight />
 
       <Suspense fallback={null}>
-        <Codrops />
-        <Fourth />
+        <First progress={scrollProgress} />
+        <Second progress={scrollProgress} />
+        <Third progress={scrollProgress} />
+        <Fourth progress={scrollProgress} />
       </Suspense>
     </>
   );

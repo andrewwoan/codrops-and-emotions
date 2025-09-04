@@ -16,13 +16,16 @@ const Experience = () => {
   const scrollSpeed = 0.005;
   const lerpFactor = 0.1;
   const isSwiping = useRef(false);
-  const mouseOffset = useRef(new THREE.Vector3());
+  const mousePositionOffset = useRef(new THREE.Vector3());
+  const mouseRotationOffset = useRef(new THREE.Euler());
   const { isModalOpen } = useModalStore();
   const lastTouchY = useRef(null);
 
+  const showInfoModal = false;
+
   useEffect(() => {
     const handleWheel = (e) => {
-      if (isModalOpen) return;
+      if (isModalOpen || showInfoModal) return;
       const normalized = normalizeWheel(e);
 
       targetScrollProgress.current +=
@@ -32,24 +35,32 @@ const Experience = () => {
     };
 
     const handleMouseMove = (e) => {
+      if (showInfoModal) return;
+
       const mouseX = (e.clientX / window.innerWidth) * 2 - 1;
       const mouseY = (e.clientY / window.innerHeight) * 2 - 1;
 
-      const sensitivityX = 0.25;
-      const sensitivityY = 0.25;
+      const sensitivityX = 0.05;
+      const sensitivityY = 0.05;
 
-      mouseOffset.current.x = mouseX * sensitivityX;
-      mouseOffset.current.y = mouseY * sensitivityY;
+      mousePositionOffset.current.x = mouseX * sensitivityX;
+      mousePositionOffset.current.y = mouseY * sensitivityY;
+
+      const rotationSensitivityX = 0.05;
+      const rotationSensitivityY = 0.05;
+
+      mouseRotationOffset.current.x = mouseY * rotationSensitivityX;
+      mouseRotationOffset.current.y = mouseX * rotationSensitivityY;
     };
 
     const handleTouchStart = (e) => {
-      if (isModalOpen) return;
+      if (isModalOpen || showInfoModal) return;
       isSwiping.current = true;
       lastTouchY.current = e.touches[0].clientY;
     };
 
     const handleTouchMove = (e) => {
-      if (!isSwiping.current) return;
+      if (!isSwiping.current || showInfoModal) return;
 
       if (lastTouchY.current !== null) {
         const deltaY = e.touches[0].clientY - lastTouchY.current;
@@ -66,12 +77,13 @@ const Experience = () => {
     };
 
     const handleMouseDown = (e) => {
-      if (isModalOpen || e.pointerType === "touch") return;
+      if (isModalOpen || showInfoModal || e.pointerType === "touch") return;
       isSwiping.current = true;
     };
 
     const handleMouseDrag = (e) => {
-      if (!isSwiping.current || e.pointerType === "touch") return;
+      if (!isSwiping.current || e.pointerType === "touch" || showInfoModal)
+        return;
       const mouseMultiplier = 0.2;
       targetScrollProgress.current +=
         Math.sign(e.movementY) * scrollSpeed * mouseMultiplier;
@@ -81,14 +93,21 @@ const Experience = () => {
       isSwiping.current = false;
     };
 
+    // Handle ESC key to close info modal
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && showInfoModal) {
+        setShowInfoModal(false);
+      }
+    };
+
     window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("mousemove", handleMouseMove);
-    // window.addEventListener("mousedown", handleMouseDown);
     window.addEventListener("mousemove", handleMouseDrag);
     window.addEventListener("mouseup", handleMouseUp);
-    // window.addEventListener("touchstart", handleTouchStart, { passive: false });
-    // window.addEventListener("touchmove", handleTouchMove, { passive: false });
-    // window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("touchstart", handleTouchStart, { passive: false });
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("touchend", handleTouchEnd);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
@@ -99,29 +118,31 @@ const Experience = () => {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isModalOpen]);
+  }, [isModalOpen, showInfoModal]);
 
   return (
     <>
       <Canvas flat={true} eventSource={document.getElementById("root")}>
-        {/* <group ref={cameraGroup}> */}
-        <PerspectiveCamera
-          ref={camera}
-          fov={45}
-          makeDefault
-          position={[0, 10, 0]}
-        />
-        {/* </group> */}
-        <OrbitControls enableZoom={false} />
+        <group ref={cameraGroup}>
+          <PerspectiveCamera
+            ref={camera}
+            fov={45}
+            makeDefault
+            position={[0, 10, 0]}
+          />
+        </group>
+        {/* <OrbitControls enableZoom={false} /> */}
         <Scene
-          // cameraGroup={cameraGroup}
+          cameraGroup={cameraGroup}
           camera={camera}
           scrollProgress={scrollProgress}
           setscrollProgress={setscrollProgress}
           targetScrollProgress={targetScrollProgress}
           lerpFactor={lerpFactor}
-          mouseOffset={mouseOffset}
+          mousePositionOffset={mousePositionOffset}
+          mouseRotationOffset={mouseRotationOffset}
         />
       </Canvas>
     </>
