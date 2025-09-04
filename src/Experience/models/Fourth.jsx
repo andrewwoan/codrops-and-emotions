@@ -16,7 +16,13 @@ export default function Model({ progress, ...props }) {
 
   return (
     <group {...props} dispose={null}>
-      <ConditionalMesh progress={progress} showRange={[0, 0.455]}>
+      <ConditionalMesh
+        progress={progress}
+        showRanges={[
+          [0, 0.455], // First range: 0 to 0.455
+          [0.95, 1], // Second range: 0.95 to 1
+        ]}
+      >
         <mesh
           geometry={nodes.Fourth_Floor_Baked.geometry}
           material={newmaterials.floor_Baked}
