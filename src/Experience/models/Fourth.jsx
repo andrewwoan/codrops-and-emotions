@@ -8,41 +8,44 @@ import { useGLTF } from "@react-three/drei";
 
 import { convertMaterialsToBasic } from "../utils/convertToBasic";
 import { useGLTFWithKTX2 } from "../utils/useGLTFWithKTX2";
+import { ConditionalMesh } from "../utils/conditionalMesh";
 
-export default function Model(props) {
+export default function Model({ progress, ...props }) {
   const { nodes, materials } = useGLTFWithKTX2("/models/Fourth_New-v4.glb");
   const newmaterials = convertMaterialsToBasic(materials);
 
   return (
     <group {...props} dispose={null}>
-      <mesh
-        geometry={nodes.Fourth_Floor_Baked.geometry}
-        material={newmaterials.floor_Baked}
-        position={[-6.613, -1.091, -32.441]}
-      />
-      <mesh
-        geometry={nodes.Fourth_Text_Baked.geometry}
-        material={newmaterials.fourth_extras_Baked}
-        position={[-24.671, -0.425, -35.063]}
-        rotation={[Math.PI, -0.365, Math.PI]}
-      />
-      <mesh
-        geometry={nodes.Fourth_Text_Rotation.geometry}
-        material={newmaterials.fourth_extras_Baked}
-        position={[-25.073, 2.285, -35.333]}
-        rotation={[Math.PI, -0.972, Math.PI]}
-      />
-      <mesh
-        geometry={nodes.Rails.geometry}
-        material={newmaterials.rails_Baked}
-        position={[-6.432, -1.407, 3.62]}
-      />
-      <mesh
-        geometry={nodes.Fourth_Wall_Baked.geometry}
-        material={newmaterials.wall_Baked}
-        position={[-19.505, -2.498, -75.294]}
-        rotation={[Math.PI / 2, 0, 3.003]}
-      />
+      <ConditionalMesh progress={progress} showRange={[0, 0.455]}>
+        <mesh
+          geometry={nodes.Fourth_Floor_Baked.geometry}
+          material={newmaterials.floor_Baked}
+          position={[-6.613, -1.091, -32.441]}
+        />
+        <mesh
+          geometry={nodes.Fourth_Text_Baked.geometry}
+          material={newmaterials.fourth_extras_Baked}
+          position={[-24.671, -0.425, -35.063]}
+          rotation={[Math.PI, -0.365, Math.PI]}
+        />
+        <mesh
+          geometry={nodes.Fourth_Text_Rotation.geometry}
+          material={newmaterials.fourth_extras_Baked}
+          position={[-25.073, 2.285, -35.333]}
+          rotation={[Math.PI, -0.972, Math.PI]}
+        />
+        <mesh
+          geometry={nodes.Rails.geometry}
+          material={newmaterials.rails_Baked}
+          position={[-6.432, -1.407, 3.62]}
+        />
+        <mesh
+          geometry={nodes.Fourth_Wall_Baked.geometry}
+          material={newmaterials.wall_Baked}
+          position={[-19.505, -2.498, -75.294]}
+          rotation={[Math.PI / 2, 0, 3.003]}
+        />
+      </ConditionalMesh>
     </group>
   );
 }
