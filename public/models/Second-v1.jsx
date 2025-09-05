@@ -14,21 +14,24 @@ export default function Model({ progress, loopCounter, ...props }) {
   // Create modified materials for even loops (grayscale and darker)
   const modifiedMaterials = useMemo(() => {
     if (loopCounter % 2 === 0) {
-      const darkMaterials = {};
+      const grayMaterials = {};
       Object.keys(materials).forEach((key) => {
         const material = materials[key].clone();
 
-        // Just darken emissive colors (keep original colors but darker)
+        // Convert emissive to grayscale and darken
         const emissive = material.emissive;
-        material.emissive.setRGB(
-          emissive.r * 0.1, // Make it 40% darker
-          emissive.g * 0.1,
-          emissive.b * 0.1
-        );
+        const grayscale =
+          emissive.r * 0.299 + emissive.g * 0.587 + emissive.b * 0.114;
+        const darkerGrayscale = grayscale * 0.4; // Make it 40% darker
 
-        darkMaterials[key] = material;
+        material.emissive.setRGB(
+          darkerGrayscale,
+          darkerGrayscale,
+          darkerGrayscale
+        );
+        grayMaterials[key] = material;
       });
-      return darkMaterials;
+      return grayMaterials;
     }
     return materials;
   }, [loopCounter, materials]);
@@ -295,27 +298,24 @@ export default function Model({ progress, loopCounter, ...props }) {
           rotation={[0, 0.181, 0]}
           scale={0.14}
         />
-
-        {loopCounter % 2 !== 0 && (
-          <group
-            position={[3.235, 0.789, -22.545]}
-            rotation={[0, 0.181, 0]}
-            scale={0.14}
-          >
-            <mesh
-              geometry={nodes.Cube020.geometry}
-              material={modifiedMaterials["Pusheen Outline.001"]}
-            />
-            <mesh
-              geometry={nodes.Cube020_1.geometry}
-              material={modifiedMaterials["Pusheen Body.001"]}
-            />
-            <mesh
-              geometry={nodes.Cube020_2.geometry}
-              material={modifiedMaterials["Pusheen Eyes.001"]}
-            />
-          </group>
-        )}
+        <group
+          position={[3.235, 0.789, -22.545]}
+          rotation={[0, 0.181, 0]}
+          scale={0.14}
+        >
+          <mesh
+            geometry={nodes.Cube020.geometry}
+            material={modifiedMaterials["Pusheen Outline.001"]}
+          />
+          <mesh
+            geometry={nodes.Cube020_1.geometry}
+            material={modifiedMaterials["Pusheen Body.001"]}
+          />
+          <mesh
+            geometry={nodes.Cube020_2.geometry}
+            material={modifiedMaterials["Pusheen Eyes.001"]}
+          />
+        </group>
       </ConditionalMesh>
     </group>
   );
