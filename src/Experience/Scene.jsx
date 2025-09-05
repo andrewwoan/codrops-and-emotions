@@ -30,6 +30,7 @@ const Scene = ({
   const [rotationBufferQuat] = useState(
     new THREE.Quaternion().setFromEuler(rotationTargets[0].rotation)
   );
+  const [loopCounter, setLoopCounter] = useState(1);
 
   const getLerpedRotation = (progress) => {
     for (let i = 0; i < rotationTargets.length - 1; i++) {
@@ -71,17 +72,21 @@ const Scene = ({
         lerpFactor
       );
 
-      if (newProgress > 1) {
+      if (newProgress >= 1) {
         newProgress = 0;
         targetScrollProgress.current = 0;
+        setLoopCounter((prev) => prev + 1); // Increment loop counter
+        console.log(`Entering loop ${loopCounter + 1}`);
       } else if (newProgress < 0) {
         newProgress = 1;
         targetScrollProgress.current = 1;
+        setLoopCounter((prev) => prev + 1); // Increment loop counter
+        console.log(`Entering loop ${loopCounter + 1}`);
       }
 
       setscrollProgress(newProgress);
 
-      console.log(newProgress);
+      // console.log(newProgress);
       // console.log(camera.current.rotation);
 
       const basePoint = cameraCurve.getPoint(newProgress);
@@ -169,10 +174,10 @@ const Scene = ({
       <ambientLight />
 
       <Suspense fallback={null}>
-        <First progress={scrollProgress} />
-        <Second progress={scrollProgress} />
-        <Third progress={scrollProgress} />
-        <Fourth progress={scrollProgress} />
+        <First progress={scrollProgress} loopCounter={loopCounter} />
+        <Second progress={scrollProgress} loopCounter={loopCounter} />
+        <Third progress={scrollProgress} loopCounter={loopCounter} />
+        <Fourth progress={scrollProgress} loopCounter={loopCounter} />
       </Suspense>
     </>
   );

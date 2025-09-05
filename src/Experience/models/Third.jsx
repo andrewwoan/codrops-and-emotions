@@ -5,17 +5,86 @@ Command: npx gltfjsx@6.5.3 Third_New-v3.glb
 
 import React, { useMemo } from "react";
 import { useGLTF } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { KTX2Loader } from "three-stdlib";
 
 import { Float } from "@react-three/drei";
 
 import { convertMaterialsToBasic } from "../utils/convertToBasic";
-import { useGLTFWithKTX2 } from "../utils/useGLTFWithKTX2";
+import { useGLTFWithKTX2, useKTX2Loader } from "../utils/useGLTFWithKTX2";
 import { ConditionalMesh } from "../utils/conditionalMesh";
 
-export default function Model({ progress, ...props }) {
+export default function Model({ progress, loopCounter, ...props }) {
+  const { gl } = useThree();
   const { nodes, materials } = useGLTFWithKTX2("/models/Third_New-v3.glb");
   const newmaterials = convertMaterialsToBasic(materials);
+
+  const ktx2Loader = useKTX2Loader();
+  // Cache KTX2 textures (loaded only once)
+  const ktx2Textures = useMemo(() => {
+    const textures = {};
+
+    // Load KTX2 textures
+    ktx2Loader.load("/textures/third/third_night.ktx2", (texture) => {
+      texture.flipY = false;
+      textures.third_Baked = texture;
+    });
+
+    ktx2Loader.load("/textures/third/second_night.ktx2", (texture) => {
+      texture.flipY = false;
+      textures.second_Baked = texture;
+    });
+
+    ktx2Loader.load("/textures/third/first_night.ktx2", (texture) => {
+      texture.flipY = false;
+      textures.first_Baked = texture;
+    });
+
+    return textures;
+  }, [gl]);
+
+  // Create materials based on loopCounter
+  const ktx2Materials = useMemo(() => {
+    if (loopCounter % 2 === 0) {
+      // Use KTX2 textures for even loops
+      return {
+        third_Baked: new THREE.MeshBasicMaterial({
+          map: ktx2Textures.third_Baked,
+          transparent: true,
+          alphaTest: 0.5,
+        }),
+        second_Baked: new THREE.MeshBasicMaterial({
+          map: ktx2Textures.second_Baked,
+          transparent: true,
+          alphaTest: 0.5,
+        }),
+        first_Baked: new THREE.MeshBasicMaterial({
+          map: ktx2Textures.first_Baked,
+          transparent: true,
+          alphaTest: 0.5,
+        }),
+      };
+    }
+    // Clone newmaterials and set flipY = false for their textures
+    const clonedMaterials = {};
+    Object.keys(newmaterials).forEach((key) => {
+      clonedMaterials[key] = newmaterials[key].clone();
+      if (clonedMaterials[key].map) {
+        clonedMaterials[key].map.flipY = false;
+      }
+    });
+    return clonedMaterials;
+  }, [loopCounter, newmaterials, ktx2Textures]);
+
+  // Dispose of textures when component unmounts
+  useMemo(() => {
+    return () => {
+      Object.values(ktx2Textures).forEach((texture) => {
+        if (texture) texture.dispose();
+      });
+    };
+  }, [ktx2Textures]);
 
   // Animation configuration
   const animationConfig = {
@@ -125,12 +194,17 @@ export default function Model({ progress, ...props }) {
     ];
   }, [plane017Progress]);
 
+  // Third_Baked position based on loopCounter
+  const thirdBakedPosition = useMemo(() => {
+    return [6.585, loopCounter % 2 === 0 ? -5.3 : -4.978, -41.493];
+  }, [loopCounter]);
+
   return (
     <group {...props} dispose={null}>
       <ConditionalMesh progress={progress} showRange={[0.755, 0.99]}>
         <mesh
           geometry={nodes.First_Paper_Baked.geometry}
-          material={newmaterials.first_Baked}
+          material={ktx2Materials.first_Baked}
           position={[0.168, -0.712, -44.536]}
           rotation={[-Math.PI / 2, 0, -3.003]}
           scale={[-20.58, -2.026, -24.108]}
@@ -138,14 +212,14 @@ export default function Model({ progress, ...props }) {
 
         <mesh
           geometry={nodes.Third_Baked.geometry}
-          material={newmaterials.third_Baked}
-          position={[6.585, -4.978, -41.493]}
+          material={ktx2Materials.third_Baked}
+          position={thirdBakedPosition}
           rotation={[Math.PI, -0.138, Math.PI]}
           scale={0.19}
         />
         <mesh
           geometry={nodes.Hidden_Door.geometry}
-          material={newmaterials.first_Baked}
+          material={ktx2Materials.first_Baked}
           position={[0.911, 1.124, -44.639]}
           rotation={hiddenDoorRotation}
           scale={[-20.58, -2.026, -24.108]}
@@ -158,7 +232,7 @@ export default function Model({ progress, ...props }) {
         >
           <mesh
             geometry={nodes.Ocean002.geometry}
-            material={newmaterials.third_Baked}
+            material={ktx2Materials.third_Baked}
             position={[3.697, -5.756, -41.602]}
             rotation={[Math.PI, -0.138, Math.PI]}
             scale={0.19}
@@ -166,7 +240,7 @@ export default function Model({ progress, ...props }) {
 
           <mesh
             geometry={nodes.Ocean003.geometry}
-            material={newmaterials.third_Baked}
+            material={ktx2Materials.third_Baked}
             position={[6.585, -4.978, -41.493]}
             rotation={[Math.PI, -0.138, Math.PI]}
             scale={0.19}
@@ -181,14 +255,14 @@ export default function Model({ progress, ...props }) {
         >
           <mesh
             geometry={nodes.Ocean.geometry}
-            material={newmaterials.third_Baked}
+            material={ktx2Materials.third_Baked}
             position={[-3.971, -6.047, -40.799]}
             rotation={[Math.PI, -0.138, Math.PI]}
             scale={0.19}
           />
           <mesh
             geometry={nodes.Ocean001.geometry}
-            material={newmaterials.third_Baked}
+            material={ktx2Materials.third_Baked}
             position={[-1.568, -6.83, -40.595]}
             rotation={[Math.PI, -0.138, Math.PI]}
             scale={0.19}
@@ -201,23 +275,23 @@ export default function Model({ progress, ...props }) {
         >
           <mesh
             geometry={nodes.Plane017.geometry}
-            material={newmaterials.second_Baked}
+            material={ktx2Materials.second_Baked}
           />
           <mesh
             geometry={nodes.Plane017_1.geometry}
-            material={newmaterials.third_Baked}
+            material={ktx2Materials.third_Baked}
           />
         </group>
         <mesh
           geometry={nodes.Right_Arm.geometry}
-          material={newmaterials.second_Baked}
+          material={ktx2Materials.second_Baked}
           position={rightArmPosition}
           rotation={[-1.566, -0.042, -3.004]}
           scale={0.19}
         />
         <mesh
           geometry={nodes.Left_Arm.geometry}
-          material={newmaterials.second_Baked}
+          material={ktx2Materials.second_Baked}
           position={leftArmPosition}
           rotation={[-1.566, -0.042, -3.004]}
           scale={0.19}
@@ -229,37 +303,37 @@ export default function Model({ progress, ...props }) {
         >
           <mesh
             geometry={nodes.Plane020.geometry}
-            material={newmaterials.second_Baked}
+            material={ktx2Materials.second_Baked}
           />
           <mesh
             geometry={nodes.Plane020_1.geometry}
-            material={newmaterials.third_Baked}
+            material={ktx2Materials.third_Baked}
           />
         </group>
         <mesh
           geometry={nodes.Sun.geometry}
-          material={newmaterials.second_Baked}
+          material={ktx2Materials.second_Baked}
           position={[-4.926, 5.116, -42.575]}
           rotation={[-1.566, -0.042, -3.004]}
           scale={0.19}
         />
         <mesh
           geometry={nodes.Seagull.geometry}
-          material={newmaterials.second_Baked}
+          material={ktx2Materials.second_Baked}
           position={[0.575, 1.074, -42.836]}
           rotation={[-1.566, -0.042, -3.004]}
           scale={0.19}
         />
         <mesh
           geometry={nodes.Seagull001.geometry}
-          material={newmaterials.second_Baked}
+          material={ktx2Materials.second_Baked}
           position={[0.575, 1.074, -42.836]}
           rotation={[-1.566, -0.042, -3.004]}
           scale={0.19}
         />
         <mesh
           geometry={nodes.Seagull002.geometry}
-          material={newmaterials.second_Baked}
+          material={ktx2Materials.second_Baked}
           position={[0.575, 1.074, -42.836]}
           rotation={[-1.566, -0.042, -3.004]}
           scale={0.19}
